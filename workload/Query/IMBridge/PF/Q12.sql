@@ -1,0 +1,2 @@
+-- Select tpcx uc06 Staged Prediction
+select serial_number, PREDICT tpcx_ai_uc06_staged(smart_5_raw, smart_10_raw, smart_184_raw, smart_187_raw, smart_188_raw, smart_197_raw, smart_198_raw) as failure from Failures_sf10;

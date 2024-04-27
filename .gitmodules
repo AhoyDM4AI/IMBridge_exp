@@ -1,0 +1,3 @@
+[submodule "IMBridge"]
+	path = IMBridge
+	url = git@github.com:AhoyDM4AI/IMBridge.git

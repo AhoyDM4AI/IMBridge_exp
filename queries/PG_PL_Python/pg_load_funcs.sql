@@ -18,7 +18,7 @@ feat = pd.DataFrame({
 })
 
 return model.predict(feat)[0]
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION uc03(store text, department text)
 RETURNS text
@@ -90,7 +90,7 @@ forecasts.append(
 )
 
 return forecasts[0]
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 
 CREATE FUNCTION uc04(txt text)
@@ -112,7 +112,7 @@ data = pd.DataFrame({
 })
 return model.predict(data["text"])[0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 
 CREATE FUNCTION uc06(smart_5_raw REAL,smart_10_raw REAL,smart_184_raw REAL,
@@ -145,7 +145,7 @@ data = pd.DataFrame({
 })
 return model.predict(data)[0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION uc07(user_id INTEGER, item_id INTEGER)
 RETURNS REAL
@@ -163,7 +163,7 @@ model_file_name = f"/home/tpcxai_datasets/model/{name}/{name}.python.model"
 model = joblib.load(model_file_name)
 rating = model.predict(user_id, item_id).est
 return rating
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION uc08(scan_count INTEGER, scan_count_abs INTEGER, Monday INTEGER, Tuesday INTEGER, Wednesday INTEGER,
                      Thursday INTEGER, Friday INTEGER, Saturday INTEGER, Sunday INTEGER, dep0 INTEGER, dep1 INTEGER,
@@ -204,7 +204,7 @@ dec_fun = np.vectorize(decode_label)
 
 return dec_fun(predictions)[0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 
 CREATE FUNCTION uc10(business_hour_norm REAL, amount_norm REAL)
@@ -226,7 +226,7 @@ data = pd.DataFrame({
 })
 return model.predict(data)[0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf1(prop_location_score1 REAL, prop_location_score2 REAL,
                     prop_log_historical_price REAL, price_usd REAL, orig_destination_distance REAL,
@@ -269,7 +269,7 @@ categorical = [args[8:]]
 
 X = np.hstack((scaler.transform(numerical), enc.transform(categorical).toarray()))
 return model.predict(X)[0]
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf2(prop_location_score1 REAL, prop_location_score2 REAL,
                     prop_log_historical_price REAL, price_usd REAL, orig_destination_distance REAL,
@@ -290,7 +290,6 @@ import time
 
 name = "pf2"
 
-start = time.perf_counter()
 onnx_path = '/home/public_datasets/Expedia/expedia_dt_pipeline.onnx'
 ortconfig = ort.SessionOptions()
 expedia_onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
@@ -309,9 +308,6 @@ expedia_type_map = {
     float: np.float32,
     str: str
 }
-stop = time.perf_counter()
-with open(f"/home/pg_init_{name}.log", 'a+') as f:
-    f.write(f"{(stop-start)*1000}\n")
 
 infer_batch = {
     elem: np.array([args[i]]).astype(expedia_type_map[type(args[i])]).reshape((-1, 1))
@@ -321,7 +317,7 @@ outputs = expedia_onnx_session.run([expedia_label.name], infer_batch)
 
 return outputs[0][0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf2(prop_location_score1 REAL, prop_location_score2 REAL,
                     prop_log_historical_price REAL, price_usd REAL, orig_destination_distance REAL,
@@ -373,7 +369,7 @@ outputs = expedia_onnx_session.run([expedia_label.name], infer_batch)
 
 return outputs[0][0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 
 CREATE FUNCTION pf3(slatitude REAL, slongitude REAL, dlatitude REAL, dlongitude REAL, name1 INTEGER,
@@ -406,7 +402,7 @@ categorical = [args[4:]]
 X = np.hstack((scaler.transform(numerical), enc.transform(categorical).toarray()))
 return model.predict(X)[0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf4(slatitude REAL, slongitude REAL, dlatitude REAL, dlongitude REAL, name1 INTEGER,
                     name2 VARCHAR, name4 VARCHAR, acountry VARCHAR, active_ VARCHAR, scity VARCHAR, scountry VARCHAR,
@@ -439,7 +435,7 @@ infer_batch = {
 outputs = flights_onnx_session.run([flights_label.name], infer_batch)
 return outputs[0][0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf5(hematocrit REAL, neutrophils REAL, sodium REAL, glucose REAL, bloodureanitro REAL,
                     creatinine REAL, bmi REAL, pulse INTEGER, respiration REAL, secondarydiagnosisnonicd9 INTEGER,
@@ -471,7 +467,7 @@ categorical = [args[10:]]
 
 X = np.hstack((scaler.transform(numerical), enc.transform(categorical).toarray()))
 return model.predict(X)[0]
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf6(hematocrit REAL, neutrophils REAL, sodium REAL, glucose REAL, bloodureanitro REAL,
                     creatinine REAL, bmi REAL, pulse INTEGER, respiration REAL, secondarydiagnosisnonicd9 INTEGER,
@@ -510,7 +506,7 @@ infer_batch = {
 outputs = hospital_onnx_session.run([hospital_label.name], infer_batch)
 return outputs[0][0]
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 
 CREATE FUNCTION pf7(V1 REAL, V2 REAL, V3 REAL, V4 REAL, V5 REAL, V6 REAL, V7 REAL, V8 REAL,
@@ -540,7 +536,7 @@ numerical = [args]
 X = scaler.transform(numerical)
 return round(model.predict(X)[0])
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;
 
 CREATE FUNCTION pf8(V1 REAL, V2 REAL, V3 REAL, V4 REAL, V5 REAL, V6 REAL, V7 REAL, V8 REAL,
                     V9 REAL, V10 REAL, V11 REAL, V12 REAL, V13 REAL, V14 REAL, V15 REAL, V16 REAL,
@@ -570,4 +566,4 @@ numerical = [args]
 X = scaler.transform(numerical)
 return round(model.predict(X)[0])
 
-$$ LANGUAGE plpython3u;
+$$ LANGUAGE plpython3u PARALLEL SAFE;

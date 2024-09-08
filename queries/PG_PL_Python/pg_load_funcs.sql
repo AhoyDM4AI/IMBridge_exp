@@ -482,7 +482,7 @@ import onnxruntime as ort
 
 name = "pf6"
 
-onnx_path = '/home/public_datasets/Hospital/hospital_mlp_pipeline.onnx'
+onnx_path = '/home/public_datasets/Hospital/hospital_pipeline.onnx'
 ortconfig = ort.SessionOptions()
 hospital_onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
 hospital_label = hospital_onnx_session.get_outputs()[0]

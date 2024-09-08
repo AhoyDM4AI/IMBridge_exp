@@ -18,7 +18,7 @@ class pf6(AbstractFunction):
 
     def setup(self):
         self.predict_col = self.name
-        onnx_path = '"../../../raven_datasets/Hospital/hospital_mlp_pipeline.onnx' 
+        onnx_path = '"../../../raven_datasets/Hospital/hospital_pipeline.onnx' 
         ortconfig = ort.SessionOptions()
         self.onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
         self.label = self.onnx_session.get_outputs()[0]

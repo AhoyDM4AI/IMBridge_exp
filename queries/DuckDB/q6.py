@@ -5,62 +5,40 @@ import numpy as np
 from duckdb.typing import BIGINT, DOUBLE, FLOAT, VARCHAR
 import pandas as pd
 import time
-import onnxruntime as ort
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+import xgboost as xgb
 
-name = "pf6"
+name = "q6"
 
 con = duckdb.connect("imbridge2.db")
 
-onnx_path = './test_raven/Hospital/hospital_pipeline.onnx'
-ortconfig = ort.SessionOptions()
-hospital_onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
-hospital_label = hospital_onnx_session.get_outputs()[0]
-numerical_columns = ['hematocrit', 'neutrophils', 'sodium', 'glucose', 'bloodureanitro', 'creatinine', 'bmi', 'pulse',
-                     'respiration', 'secondarydiagnosisnonicd9']
-categorical_columns = ['rcount', 'gender', 'dialysisrenalendstage', 'asthma', 'irondef', 'pneum', 'substancedependence',
-                       'psychologicaldisordermajor', 'depress', 'psychother', 'fibrosisandother', 'malnutrition',
-                       'hemo']
-hospital_input_columns = numerical_columns + categorical_columns
-hospital_type_map = {
-    'int32': np.int64,
-    'int64': np.int64,
-    'float64': np.float32,
-    'object': str,
-}
+scaler_path = '/home/test_raven/Credit_Card/creditcard_standard_scale_model.pkl'
+model_path = '/home/test_raven/Credit_Card/creditcard_xgb_model.json'
+with open(scaler_path, 'rb') as f:
+    scaler = pickle.load(f)
+model = xgb.Booster(model_file=model_path)
 
 
-def udf(hematocrit, neutrophils, sodium, glucose, bloodureanitro, creatinine, bmi, pulse, respiration,
-        secondarydiagnosisnonicd9,
-        rcount, gender, dialysisrenalendstage, asthma, irondef, pneum, substancedependence, psychologicaldisordermajor,
-        depress, psychother, fibrosisandothe, malnutrition, hemo):
-    def udf_wrap(*args):
-        infer_batch = {
-            elem: args[i].to_numpy().astype(hospital_type_map[args[i].to_numpy().dtype.name]).reshape((-1, 1))
-            for i, elem in enumerate(hospital_input_columns)
-        }
-        outputs = hospital_onnx_session.run([hospital_label.name], infer_batch)
-        return outputs[0]
-
-    return udf_wrap(hematocrit, neutrophils, sodium, glucose, bloodureanitro, creatinine, bmi, pulse, respiration,
-        secondarydiagnosisnonicd9,
-        rcount, gender, dialysisrenalendstage, asthma, irondef, pneum, substancedependence, psychologicaldisordermajor,
-        depress, psychother, fibrosisandothe, malnutrition, hemo)
+def udf(V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15, V16, V17, V18, V19, V20, V21, V22, V23, V24, V25, V26, V27, V28, Amount):
+    data = np.column_stack(
+        [V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15, V16, V17, V18, V19, V20, V21, V22, V23, V24, V25, V26, V27, V28, Amount])
+    numerical = np.column_stack(data.T)
+    X = scaler.transform(numerical)
+    return model.predict(xgb.DMatrix(X))
 
 
 con.create_function("udf", udf,
-                    [DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, BIGINT,
-                     DOUBLE, BIGINT, VARCHAR, VARCHAR,BIGINT, BIGINT,
-                     BIGINT, BIGINT, BIGINT, BIGINT, BIGINT, BIGINT, BIGINT, BIGINT, BIGINT], BIGINT, type="arrow")
+                    [DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE,
+                     DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE,
+                     DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE], BIGINT, type="arrow")
 
-#con.sql("SET threads TO 1;")
+# con.sql("SET threads TO 1;")
 
 con.sql('''
-Explain analyze SELECT eid, udf(hematocrit, neutrophils, sodium, glucose, bloodureanitro, creatinine, bmi, pulse,
- respiration, secondarydiagnosisnonicd9, rcount, gender, cast(dialysisrenalendstage as INTEGER), cast(asthma as INTEGER),
-  cast(irondef as INTEGER), cast(pneum as INTEGER), cast(substancedependence as INTEGER),
-   cast(psychologicaldisordermajor as INTEGER), cast(depress as INTEGER), cast(psychother as INTEGER),
-    cast(fibrosisandother as INTEGER), cast(malnutrition as INTEGER), cast(hemo as INTEGER)) AS lengthofstay
-   FROM LengthOfStay_extension WHERE hematocrit > 10 AND neutrophils > 10 AND bloodureanitro < 20 AND pulse < 70;
+Explain analyze SELECT Time, Amount, udf(V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15,
+ V16, V17, V18, V19, V20, V21, V22, V23, V24, V25, V26, V27, V28, Amount) AS Class FROM Credit_Card_extension 
+ WHERE V1 > 1 AND V2 < 0.27 AND V3 > 0.3;
 ''')
 
 print(name)

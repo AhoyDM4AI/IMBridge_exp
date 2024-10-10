@@ -1,73 +1,51 @@
-CREATE TABLE hospital_stds as
-select STDDEV(hematocrit) hematocrit_std, STDDEV(neutrophils) neutrophils_std, STDDEV(sodium) sodium_std,
-       STDDEV(glucose) glucose_std, STDDEV(bloodureanitro) bloodureanitro_std, STDDEV(creatinine) creatinine_std,
-       STDDEV(bmi) bmi_std, STDDEV(pulse) pulse_std, STDDEV(respiration) respiration_std,
-       STDDEV(secondarydiagnosisnonicd9) secondarydiagnosisnonicd9_std
-from lengthofstay;
+CREATE TABLE card_stds as
+select
+STDDEV(V1) V1_std, STDDEV(V2) V2_std, STDDEV(V3) V3_std, STDDEV(V4) V4_std, STDDEV(V5) V5_std, STDDEV(V6) V6_std, STDDEV(V7) V7_std, STDDEV(V8) V8_std, STDDEV(V9) V9_std, STDDEV(V10) V10_std, STDDEV(V11) V11_std, STDDEV(V12) V12_std, STDDEV(V13) V13_std, STDDEV(V14) V14_std, STDDEV(V15) V15_std, STDDEV(V16) V16_std, STDDEV(V17) V17_std, STDDEV(V18) V18_std, STDDEV(V19) V19_std, STDDEV(V20) V20_std, STDDEV(V21) V21_std,
+STDDEV(V22) V22_std, STDDEV(V23) V23_std, STDDEV(V24) V24_std, STDDEV(V25) V25_std, STDDEV(V26) V26_std, STDDEV(V27) V27_std, STDDEV(V28) V28_std, STDDEV(Amount) Amount_std
+from credit_card;
 
-CREATE TABLE hospital_avgs as
-select AVG(hematocrit) hematocrit_avg, AVG(neutrophils) neutrophils_avg,
-       AVG(sodium) sodium_avg, AVG(glucose) glucose_avg, AVG(bloodureanitro) bloodureanitro_avg,
-       AVG(creatinine) creatinine_avg, AVG(bmi) bmi_avg, AVG(pulse) pulse_avg,
-       AVG(respiration) respiration_avg, AVG(secondarydiagnosisnonicd9) secondarydiagnosisnonicd9_avg
-from lengthofstay;
+CREATE TABLE card_avgs as
+select
+AVG(V1) V1_avg, AVG(V2) V2_avg, AVG(V3) V3_avg, AVG(V4) V4_avg, AVG(V5) V5_avg, AVG(V6) V6_avg, AVG(V7) V7_avg, AVG(V8) V8_avg, AVG(V9) V9_avg, AVG(V10) V10_avg, AVG(V11) V11_avg, AVG(V12) V12_avg, AVG(V13) V13_avg, AVG(V14) V14_avg, AVG(V15) V15_avg, AVG(V16) V16_avg, AVG(V17) V17_avg, AVG(V18) V18_avg, AVG(V19) V19_avg, AVG(V20) V20_avg,
+AVG(V21) V21_avg, AVG(V22) V22_avg, AVG(V23) V23_avg, AVG(V24) V24_avg, AVG(V25) V25_avg, AVG(V26) V26_avg, AVG(V27) V27_avg, AVG(V28) V28_avg, AVG(Amount) Amount_avg
+from credit_card;
 
-create TEMP TABLE hospital_feats as
-select eid, hematocrit/hematocrit_std hematocrit, neutrophils/neutrophils_std neutrophils,
-       sodium/sodium_std sodium, glucose/glucose_std glucose, bloodureanitro/bloodureanitro_std bloodureanitro,
-       creatinine/creatinine_std creatinine, bmi/bmi_std bmi, pulse/pulse_std pulse,
-       respiration/respiration_std respiration, secondarydiagnosisnonicd9/secondarydiagnosisnonicd9_std secondarydiagnosisnonicd9,
-        rcount, gender, dialysisrenalendstage, asthma,
-        irondef, pneum, substancedependence,
-        psychologicaldisordermajor, depress, psychother,
-        fibrosisandother, malnutrition, hemo, lengthofstay
-from (select eid, hematocrit - hematocrit_avg hematocrit, neutrophils - neutrophils_avg neutrophils,
-             sodium - sodium_avg sodium, glucose - glucose_avg glucose,
-             bloodureanitro - bloodureanitro_avg bloodureanitro,
-             creatinine - creatinine_avg creatinine, bmi - bmi_avg bmi,
-             pulse - pulse_avg pulse, respiration - respiration_avg respiration,
-             secondarydiagnosisnonicd9 - secondarydiagnosisnonicd9_avg secondarydiagnosisnonicd9,
-            rcount, gender, dialysisrenalendstage, asthma,
-            irondef, pneum, substancedependence,
-            psychologicaldisordermajor, depress, psychother,
-            fibrosisandother, malnutrition, hemo, lengthofstay
-from lengthofstay cross join hospital_avgs) t1 cross join hospital_stds;
-
-select (hematocrit-(select AVG(hematocrit) from lengthofstay))/(select STDDEV(hematocrit) from lengthofstay),
-       (neutrophils-(select AVG(neutrophils) from lengthofstay))/(select STDDEV(neutrophils) from lengthofstay),
-       (sodium-(select AVG(sodium) from lengthofstay))/(select STDDEV(sodium) from lengthofstay),
-       (glucose-(select AVG(glucose) from lengthofstay))/(select STDDEV(glucose) from lengthofstay),
-       (bloodureanitro-(select AVG(bloodureanitro) from lengthofstay))/(select STDDEV(bloodureanitro) from lengthofstay),
-       (creatinine-(select AVG(creatinine) from lengthofstay))/(select STDDEV(creatinine) from lengthofstay),
-       (bmi-(select AVG(bmi) from lengthofstay))/(select STDDEV(bmi) from lengthofstay),
-       (pulse-(select AVG(pulse) from lengthofstay))/(select STDDEV(pulse) from lengthofstay),
-       (respiration-(select AVG(respiration) from lengthofstay))/(select STDDEV(respiration) from lengthofstay),
-       (secondarydiagnosisnonicd9-(select AVG(secondarydiagnosisnonicd9) from lengthofstay))/(select STDDEV(secondarydiagnosisnonicd9) from lengthofstay)
-from lengthofstay;
+create TEMP TABLE card_feats as
+select Time, V1/V1_std V1, V2/V2_std V2, V3/V3_std V3,
+       V4/V4_std V4, V5/V5_std V5, V6/V6_std V6,
+       V7/V7_std V7, V8/V8_std V8, V9/V9_std V9,
+       V10/V10_std V10, V11/V11_std V11, V12/V12_std V12,
+       V13/V13_std V13, V14/V14_std V14, V15/V15_std V15,
+       V16/V16_std V16, V17/V17_std V17, V18/V18_std V18,
+       V19/V19_std V19, V20/V20_std V20, V21/V21_std V21,
+       V22/V22_std V22, V23/V23_std V23, V24/V24_std V24,
+       V25/V25_std V25, V26/V26_std V26, V27/V27_std V27,
+       V28/V28_std V28, Amount/Amount_std Amount, class
+from (select Time, V1 - V1_avg V1, V2 - V2_avg V2, V3 - V3_avg V3, V4 - V4_avg V4, V5 - V5_avg V5,
+             V6 - V6_avg V6, V7 - V7_avg V7, V8 - V8_avg V8, V9 - V9_avg V9, V10 - V10_avg V10,
+             V11 - V11_avg V11, V12 - V12_avg V12, V13 - V13_avg V13, V14 - V14_avg V14,
+             V15 - V15_avg V15, V16 - V16_avg V16, V17 - V17_avg V17, V18 - V18_avg V18,
+             V19 - V19_avg V19, V20 - V20_avg V20, V21 - V21_avg V21, V22 - V22_avg V22,
+             V23 - V23_avg V23, V24 - V24_avg V24, V25 - V25_avg V25, V26 - V26_avg V26,
+             V27 - V27_avg V27, V28 - V28_avg V28, Amount - Amount_avg Amount, class
+from credit_card cross join card_avgs) t1 cross join card_stds;
 
 
-
-SELECT eid, hematocrit, neutrophils, sodium, glucose, bloodureanitro, creatinine, bmi, pulse,
- respiration, secondarydiagnosisnonicd9, rcount, gender, dialysisrenalendstage, asthma,
-irondef, pneum, substancedependence,
-psychologicaldisordermajor, depress, psychother,
-fibrosisandother, malnutrition, hemo from lengthofstay;
-
-SELECT madlib.encode_categorical_variables ('hospital_feats', 'hospital_feats_out',
-'rcount, gender, dialysisrenalendstage, asthma,
-irondef, pneum, substancedependence,
-psychologicaldisordermajor, depress, psychother,
-fibrosisandother, malnutrition, hemo'
-,NULL,'eid,hematocrit, neutrophils, sodium, glucose, bloodureanitro, creatinine, bmi, pulse,
- respiration, secondarydiagnosisnonicd9, lengthofstay');
-
-SELECT madlib.multinom( 'hospital_feats_out',
-'hospital_logregr',
-'lengthofstay',
-'ARRAY[1, "hematocrit","neutrophils","sodium","glucose","bloodureanitro","creatinine","bmi","pulse","respiration","secondarydiagnosisnonicd9","rcount_0","rcount_1","rcount_2","rcount_3","rcount_4","rcount_5+","gender_F","gender_M","dialysisrenalendstage_false","dialysisrenalendstage_true","asthma_false","asthma_true","irondef_false","irondef_true","pneum_false","pneum_true","substancedependence_false","substancedependence_true","psychologicaldisordermajor_false","psychologicaldisordermajor_true","depress_false","depress_true","psychother_false","psychother_true","fibrosisandother_false","fibrosisandother_true","malnutrition_false","malnutrition_true","hemo_false","hemo_true"]',
+SELECT madlib.forest_train('card_feats',         -- source table
+'card_rf_model',    -- output model table
+'Time',              -- id column
+'class',           -- response
+'V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15,  V16, V17, V18, V19, V20, V21, V22, V23, V24, V25, V26, V27, V28, Amount',   -- features
+NULL,              -- exclude columns
+NULL,              -- grouping columns
+20::integer,       -- number of trees
+2::integer,        -- number of random features
+TRUE::boolean,     -- variable importance
+1::integer,        -- num_permutations
+8::integer,        -- max depth
+3::integer,        -- min split
+1::integer,        -- min bucket
+10::integer,        -- number of splits per continuous variable
 NULL,
-NULL,
-NULL,
-'max_iter=1',
 true
 );

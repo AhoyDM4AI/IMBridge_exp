@@ -1,6 +1,6 @@
 [submodule "IMBridge"]
 	path = IMBridge
-	url = git@github.com:AhoyDM4AI/IMBridge.git
+	url = git@github.com:xx/IMBridge.git
 [submodule "PFOptimizer"]
 	path = PFOptimizer
-	url = git@github.com:AhoyDM4AI/PFOptimizer.git
+	url = git@github.com:xx/PFOptimizer.git

@@ -4,7 +4,7 @@ Here are the expriments staffs of our Paper *Mitigating the Impedance Mismatch b
 
 ## Experiments in Our Paper
 
-In this paper, we study the performance of our prototype system IMBridge and make the following experiments on Publicly-available Datasets and Benchmark Datasets (TPCx-AI workload):
+In this paper, we study the performance of our prototype system IMBridge and make the following experiments on Publicly-available Datasets and Benchmark Datasets (TPC-H and TPCx-AI workload):
 * Plain OceanBase with vectorized Python UDF
 * Efficiency of One-off Context Setup
     * End to End Performance
@@ -50,7 +50,7 @@ For each prediction function defination, users can choose to create holistic or 
 
 For Q1-Q3 , we use annotations to show the selection rates of different filters in each query.
 
-For Q6-Q8, we add prediction functions as a part of the WHERE clause.
+For Q4-Q5, we add prediction functions as a part of the WHERE clause.
 
 For Q6-Q8, we transform the original TPCx-AI DataFrame serving into SQL SELECT statements.
 

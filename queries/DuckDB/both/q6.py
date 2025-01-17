@@ -1,3 +1,4 @@
+import dycacher
 import warnings
 
 import duckdb
@@ -11,7 +12,7 @@ import joblib
 
 con = duckdb.connect("imbridge.db")
 
-name = "q8"
+name = "q6"
 mname = "uc03"
 model_file_name = f"/home/model/{mname}/{mname}.python.model"
 
@@ -52,10 +53,8 @@ class UseCase03Model(object):
         return model, ts_min, ts_max
 
 
-models = joblib.load(model_file_name)
-
-
 def udf(store, department):
+    models = joblib.load(model_file_name)
     forecasts = []
     data = pd.DataFrame({
         'store': store,
@@ -84,7 +83,7 @@ def udf(store, department):
     return np.array(forecasts)
 
 
-con.create_function("udf", udf, [BIGINT, VARCHAR], VARCHAR, type="arrow")
+con.create_function("udf", udf, [BIGINT, VARCHAR], VARCHAR, type="arrow", kind=duckdb.functional.PREDICTION, batch_size=4096)
 
 # con.sql("SET threads TO 1;")
 

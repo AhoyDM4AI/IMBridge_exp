@@ -1,3 +1,4 @@
+import dycacher
 import pickle
 
 import duckdb
@@ -8,23 +9,23 @@ import time
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-name = "q3"
+name = "q2"
 
 con = duckdb.connect("imbridge2.db")
-
-scaler_path = '/home/test_raven/Flights/flights_standard_scale_model.pkl'
-enc_path = '/home/test_raven/Flights/flights_one_hot_encoder.pkl'
-model_path = '/home/test_raven/Flights/flights_rf_model.pkl'
-with open(scaler_path, 'rb') as f:
-    scaler = pickle.load(f)
-with open(enc_path, 'rb') as f:
-    enc = pickle.load(f)
-with open(model_path, 'rb') as f:
-    model = pickle.load(f)
 
 
 def udf(slatitude, slongitude, dlatitude, dlongitude, name1, name2, name4, acountry, active,
  scity, scountry, stimezone, sdst, dcity, dcountry, dtimezone, ddst):
+    
+    scaler_path = '/home/test_raven/Flights/flights_standard_scale_model.pkl'
+    enc_path = '/home/test_raven/Flights/flights_one_hot_encoder.pkl'
+    model_path = '/home/test_raven/Flights/flights_rf_model.pkl'
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+    with open(enc_path, 'rb') as f:
+        enc = pickle.load(f)
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
     data = np.column_stack([slatitude, slongitude, dlatitude, dlongitude, name1, name2, name4, acountry, active,
         scity, scountry, stimezone, sdst, dcity, dcountry, dtimezone, ddst])
     data = np.split(data, np.array([4]), axis=1)
@@ -37,7 +38,7 @@ def udf(slatitude, slongitude, dlatitude, dlongitude, name1, name2, name4, acoun
 
 con.create_function("udf", udf,
                     [DOUBLE, DOUBLE, DOUBLE, DOUBLE, BIGINT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR,
-                     BIGINT, VARCHAR, VARCHAR, VARCHAR, BIGINT, VARCHAR], BIGINT, type="arrow")
+                     BIGINT, VARCHAR, VARCHAR, VARCHAR, BIGINT, VARCHAR], BIGINT, type="arrow", kind=duckdb.functional.PREDICTION, batch_size=4096)
 
 #con.sql("SET threads TO 1;")
 

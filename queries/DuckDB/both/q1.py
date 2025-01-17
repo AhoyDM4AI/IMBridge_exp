@@ -1,3 +1,4 @@
+import dycacher
 import pickle
 
 import duckdb
@@ -11,32 +12,32 @@ name = "q1"
 
 con = duckdb.connect("imbridge2.db")
 
-onnx_path = '/home/test_raven/Expedia/expedia_dt_pipeline.onnx'
-ortconfig = ort.SessionOptions()
-expedia_onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
-expedia_label = expedia_onnx_session.get_outputs()[0]
-numerical_columns = ['prop_location_score1', 'prop_location_score2', 'prop_log_historical_price', 'price_usd',
-                         'orig_destination_distance', 'prop_review_score', 'avg_bookings_usd', 'stdev_bookings_usd']
-categorical_columns = ['position', 'prop_country_id', 'prop_starrating', 'prop_brand_bool', 'count_clicks',
-                           'count_bookings', 'year', 'month', 'weekofyear', 'time', 'site_id',
-                           'visitor_location_country_id', 'srch_destination_id', 'srch_length_of_stay',
-                           'srch_booking_window', 'srch_adults_count', 'srch_children_count', 'srch_room_count',
-                           'srch_saturday_night_bool', 'random_bool']
-expedia_input_columns = numerical_columns + categorical_columns
-expedia_type_map = {
-        'bool': np.int64,
-        'int32': np.int64,
-        'int64': np.int64,
-        'float64': np.float32,
-        'object': str,
-}
-
 def udf(prop_location_score1, prop_location_score2, prop_log_historical_price, price_usd,
         orig_destination_distance, prop_review_score, avg_bookings_usd, stdev_bookings_usd,
         position_, prop_country_id, prop_starrating, prop_brand_bool, count_clicks, count_bookings,
         year_, month_, weekofyear_, time_, site_id, visitor_location_country_id, srch_destination_id,
         srch_length_of_stay, srch_booking_window, srch_adults_count, srch_children_count,
         srch_room_count, srch_saturday_night_bool, random_bool):
+    
+    onnx_path = '/home/test_raven/Expedia/expedia_dt_pipeline.onnx'
+    ortconfig = ort.SessionOptions()
+    expedia_onnx_session = ort.InferenceSession(onnx_path, sess_options=ortconfig)
+    expedia_label = expedia_onnx_session.get_outputs()[0]
+    numerical_columns = ['prop_location_score1', 'prop_location_score2', 'prop_log_historical_price', 'price_usd',
+                            'orig_destination_distance', 'prop_review_score', 'avg_bookings_usd', 'stdev_bookings_usd']
+    categorical_columns = ['position', 'prop_country_id', 'prop_starrating', 'prop_brand_bool', 'count_clicks',
+                            'count_bookings', 'year', 'month', 'weekofyear', 'time', 'site_id',
+                            'visitor_location_country_id', 'srch_destination_id', 'srch_length_of_stay',
+                            'srch_booking_window', 'srch_adults_count', 'srch_children_count', 'srch_room_count',
+                            'srch_saturday_night_bool', 'random_bool']
+    expedia_input_columns = numerical_columns + categorical_columns
+    expedia_type_map = {
+            'bool': np.int64,
+            'int32': np.int64,
+            'int64': np.int64,
+            'float64': np.float32,
+            'object': str,
+    }
 
     def udf_wrap(*args):
         infer_batch = {
@@ -55,7 +56,9 @@ def udf(prop_location_score1, prop_location_score2, prop_log_historical_price, p
 
 
 con.create_function("udf", udf,
-                    [DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, VARCHAR, VARCHAR, BIGINT, BOOLEAN, BIGINT, BIGINT, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, BIGINT, BIGINT,BIGINT, BIGINT, BIGINT, BOOLEAN, BOOLEAN], BIGINT, type="arrow")
+                    [DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, VARCHAR, VARCHAR, BIGINT, BOOLEAN, BIGINT, BIGINT,
+                      VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, BIGINT, BIGINT,BIGINT, BIGINT, BIGINT, BOOLEAN, BOOLEAN],
+                        BIGINT, type="arrow", kind=duckdb.functional.PREDICTION, batch_size=4096)
 
 # con.sql("SET threads TO 1;")
 

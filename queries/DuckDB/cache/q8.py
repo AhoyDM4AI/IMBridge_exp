@@ -1,3 +1,4 @@
+import dycacher
 import duckdb
 import joblib
 import numpy as np
@@ -10,14 +11,14 @@ from surprise.reader import Reader
 
 con = duckdb.connect("imbridge.db")
 
-name = "q11"
+name = "q8"
 mname = "uc07"
-model_file_name = f"/home/model/{mname}/{mname}.python.model"
-
-model = joblib.load(model_file_name)
 
 
 def udf(user_id, item_id):
+    model_file_name = f"/home/model/{mname}/{mname}.python.model"
+
+    model = joblib.load(model_file_name)
     ratings = []
 
     for i in range(len(user_id)):

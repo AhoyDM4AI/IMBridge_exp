@@ -1,7 +1,8 @@
 import evadb
+import pandas as pd
 
 cursor = evadb.connect().cursor()
-name = "uc03"
+name = "uc07"
 
 params = {
     "user": "root",
@@ -15,20 +16,32 @@ cursor.query(query).df()
 
 cursor.query(f"CREATE FUNCTION IF NOT EXISTS {name} IMPL './{name}_eva.py'").execute()
 
-cursor.query("use backend_data {drop view if exists temp_eva_uc03}").execute()
+cursor.query("use backend_data {drop view if exists temp_eva_uc07}").execute()
 
-cursor.query('''
-use backend_data {
-create view temp_eva_uc03 as
-select store, department
-from Order_o Join Lineitem on Order_o.o_order_id = Lineitem.li_order_id
-Join Product on Lineitem.li_product_id = Product.p_product_id 
-group by store, department
-}''').execute()
+cursor.query("use backend_data {CREATE VIEW temp_eva_uc07 AS SELECT userID, productID FROM Product_Rating GROUP BY userID, productID}").execute()
 
-#cursor.query(f"create table tb_eva_{name} as select * from backend_data.temp_eva_{name};").execute()
+data = cursor.query("select userID, productID, uc07(userID, productID) from backend_data.temp_eva_uc07;").df()
 
-#print(cursor.query(f"select store, department, uc03(store, department) from tb_eva_{name};").df())
+print(data)
 
-print(cursor.query(f"select store, department, uc03(store, department) from backend_data.temp_eva_uc03;").df())
+data.rename(columns={'uc07': 'score'})
+
+# rank & window function
+def rank(data: pd.DataFrame, n: int) -> pd.DataFrame:
+    user_recommendations = []
+    users = data.userid.unique()
+    items = data.productid.unique()
+    for u in users:
+        ratings = data[data['userid'] == u].values.tolist()
+        ratings = sorted(ratings, key=lambda t: t[2], reverse=True)[:n]
+        for i in range(len(ratings)):
+            ratings[i].append(i+1)
+        user_recommendations.extend(ratings)
+    return pd.DataFrame(user_recommendations, columns=['userID', 'productID', 'score', 'rank'])
+
+user_recommendations = rank(data, 10)
+print(user_recommendations)
+
+    
+
 

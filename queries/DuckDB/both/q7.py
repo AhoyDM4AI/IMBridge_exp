@@ -1,3 +1,4 @@
+import dycacher
 import duckdb
 import joblib
 import numpy as np
@@ -9,21 +10,22 @@ from sklearn.feature_extraction.text import TfidfTransformer
 
 con = duckdb.connect("imbridge.db")
 
-name = "q9"
+name = "q7"
 mname = "uc04"
-model_file_name = f"/home/model/{mname}/{mname}.python.model"
-
-model = joblib.load(model_file_name)
 
 
 def udf(txt):
+    model_file_name = f"/home/model/{mname}/{mname}.python.model"
+
+    model = joblib.load(model_file_name)
+
     data = pd.DataFrame({
         "text": txt
     })
     return model.predict(data["text"])
 
 
-con.create_function("udf", udf, [VARCHAR], BIGINT, type="arrow")
+con.create_function("udf", udf, [VARCHAR], BIGINT, type="arrow", kind=duckdb.functional.PREDICTION, batch_size=4096)
 
 # con.sql("SET threads TO 1;")
 

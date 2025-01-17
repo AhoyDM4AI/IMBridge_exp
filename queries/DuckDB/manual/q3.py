@@ -9,7 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
 
-name = "q6"
+name = "q3"
 
 con = duckdb.connect("imbridge2.db")
 
